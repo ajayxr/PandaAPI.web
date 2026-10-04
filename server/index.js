@@ -8,13 +8,14 @@ import { pipeline } from 'node:stream/promises'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
 import { createPandaApiAuth, PandaApiAuthError } from './panda-api-auth.js'
+import { resolvePandaApiBaseUrl } from './panda-api-config.js'
 
 const projectRoot = fileURLToPath(new URL('../', import.meta.url))
 const distDirectory = path.join(projectRoot, 'dist')
 const isProduction = process.argv[2] === 'production' || process.env.NODE_ENV === 'production'
 const host = isProduction ? (process.env.HOST || '0.0.0.0') : '127.0.0.1'
 const port = Number(process.env.PORT || (isProduction ? 3000 : process.env.PANDAAPI_PROXY_PORT || 3001))
-const apiBaseUrl = 'https://pandaapi.com.br'
+const apiBaseUrl = resolvePandaApiBaseUrl(process.env.PANDAAPI_BASE_URL)
 const pandaApiAuth = createPandaApiAuth({
   apiBaseUrl,
   email: process.env.PANDAAPI_EMAIL?.trim(),

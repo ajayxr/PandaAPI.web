@@ -3,6 +3,8 @@ import { computed, nextTick, ref } from 'vue'
 import { findApiDocument, findApiValidation, formatLookupResult } from './api-formatters.js'
 import PandaMark from './components/PandaMark.vue'
 
+const pandaApiSwaggerUrl = import.meta.env.VITE_PANDAAPI_SWAGGER_URL || 'https://api.pandaapi.com.br/swagger/index.html'
+
 const tools = [
   { id: 'generate-cpf', name: 'Gerador de CPF', description: 'CPFs válidos para os seus testes.', category: 'GERADORES', icon: 'sparkles', label: 'CPF' },
   { id: 'generate-cnpj', name: 'Gerador de CNPJ', description: 'CNPJs numéricos prontos para usar.', category: 'GERADORES', icon: 'building', label: 'CNPJ' },
@@ -13,6 +15,7 @@ const tools = [
 ]
 
 const activeTool = ref(null)
+const mobileMenuOpen = ref(false)
 const generatedDocument = ref('')
 const validatorInput = ref('')
 const validation = ref(null)
@@ -55,9 +58,9 @@ function explainApiError(status, payload, path) {
     return 'Não foi possível processar os dados informados. Confira os dados e tente novamente.'
   }
   if (typeof detail === 'string' && detail.trim()) return detail.trim().slice(0, 300)
-  if (status === 401) return 'Token PandaAPI inválido ou expirado. Verifique o PANDAAPI_TOKEN no servidor.'
+  if (status === 401) return 'Falha na autenticação da PandaAPI. Verifique as credenciais configuradas no servidor.'
   if (status === 429) return 'Limite de consultas atingido. Aguarde um minuto e tente novamente.'
-  if (status === 503) return 'Integração não configurada. Adicione o PANDAAPI_TOKEN ao arquivo .env e reinicie o servidor.'
+  if (status === 503) return 'Integração não configurada. Verifique as credenciais da PandaAPI no servidor.'
   return `A PandaAPI respondeu com HTTP ${status}. Tente novamente.`
 }
 
@@ -285,18 +288,20 @@ function resetTool() {
         <span class="brand-tag">TOOLS</span>
       </a>
 
-      <nav class="main-nav" aria-label="Navegação principal">
+      <nav class="main-nav" :class="{ 'is-open': mobileMenuOpen }" aria-label="Navegação principal" @click="mobileMenuOpen = false">
         <a href="#ferramentas">Ferramentas</a>
         <a href="#sobre">Sobre</a>
-        <a href="https://pandaapi.com.br/swagger/index.html" target="_blank" rel="noreferrer">Documentação <span aria-hidden="true">↗</span></a>
+        <a :href="pandaApiSwaggerUrl" target="_blank" rel="noreferrer">Documentação <span aria-hidden="true">↗</span></a>
+        <a href="https://github.com/ajayxr/PandaAPI.web" target="_blank" rel="noreferrer">GitHub Web <span aria-hidden="true">↗</span></a>
+        <a href="https://github.com/ajayxr/PandaAPI" target="_blank" rel="noreferrer">GitHub API <span aria-hidden="true">↗</span></a>
       </nav>
 
       <a class="header-cta" href="#ferramentas">
         Começar a usar <span aria-hidden="true">↗</span>
       </a>
-      <a class="mobile-menu" href="#ferramentas" aria-label="Ver ferramentas">
+      <button class="mobile-menu" type="button" :aria-expanded="mobileMenuOpen" aria-label="Abrir menu" @click="mobileMenuOpen = !mobileMenuOpen">
         <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" /></svg>
-      </a>
+      </button>
     </header>
 
     <main>
@@ -335,10 +340,10 @@ function resetTool() {
             </div>
             <div class="code-bottom">
               <span><i class="status-pulse"></i> ENDPOINT PANDAAPI REAL</span>
-              <span>token guardado no servidor</span>
+              <span>API via proxy do servidor</span>
             </div>
           </div>
-          <div class="float-card float-card-top"><span class="float-spark">✳</span><span>Validação<br /><strong>no navegador</strong></span></div>
+          <div class="float-card float-card-top"><span class="float-spark">✳</span><span>Validação<br /><strong>via API própria</strong></span></div>
           <div class="float-card float-card-bottom"><span class="float-check">✓</span><span>Pronto para<br /><strong>o próximo commit</strong></span></div>
           <div class="art-orbit orbit-one"></div>
           <div class="art-orbit orbit-two"></div>

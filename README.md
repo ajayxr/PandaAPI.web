@@ -33,13 +33,19 @@ O servidor obtém o token JWT Bearer automaticamente pelo endpoint de login da P
    ```env
    PANDAAPI_EMAIL=seu_email_de_servico
    PANDAAPI_PASSWORD=sua_senha_de_servico
+   PANDAAPI_BASE_URL=https://api.pandaapi.com.br
    ```
 
 3. Reinicie o servidor com `npm run dev`. O servidor fará login em `/auth/login`, armazenará o Bearer em memória até perto da expiração e tentará autenticar novamente se receber uma resposta `401`.
 
-As chamadas do navegador passam pelo proxy local, que autentica na PandaAPI no servidor e limita as solicitações a 30 por minuto por endereço IP. O arquivo `.env` não deve ser enviado ao Git. Em produção, configure `PANDAAPI_EMAIL` e `PANDAAPI_PASSWORD` como variáveis de ambiente do serviço.
+As chamadas do navegador passam pelo proxy local, que autentica na PandaAPI no servidor e limita as solicitações a 30 por minuto por endereço IP. O arquivo `.env` não deve ser enviado ao Git. Em produção, configure `PANDAAPI_EMAIL`, `PANDAAPI_PASSWORD` e `PANDAAPI_BASE_URL` como variáveis de ambiente do serviço.
 
-A documentação pública está disponível em [pandaapi.com.br/swagger/index.html](https://pandaapi.com.br/swagger/index.html).
+O padrão de `PANDAAPI_BASE_URL` é `https://api.pandaapi.com.br`. Para o ambiente do site `dev-pandaapi.com.br`, configure `PANDAAPI_BASE_URL=https://dev-api.pandaapi.com.br` nas variáveis daquele serviço. Para o link de documentação exibido no site, configure também `VITE_PANDAAPI_SWAGGER_URL=https://dev-api.pandaapi.com.br/swagger/index.html` antes do build. A URL da API aceita somente uma origem HTTPS, sem caminho adicional; a variável `VITE_*` é pública e deve conter somente o link do Swagger, nunca credenciais.
+
+Documentação Swagger:
+
+- Produção: [api.pandaapi.com.br/swagger/index.html](https://api.pandaapi.com.br/swagger/index.html)
+- Desenvolvimento: [dev-api.pandaapi.com.br/swagger/index.html](https://dev-api.pandaapi.com.br/swagger/index.html)
 
 Para iniciar em produção, execute:
 

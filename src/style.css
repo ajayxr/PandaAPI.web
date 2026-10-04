@@ -26,6 +26,8 @@ button { color: inherit; }
 .page-shell { width: min(1160px, calc(100% - 80px)); margin-inline: auto; }
 
 .site-header {
+  position: relative;
+  z-index: 5;
   height: 80px;
   display: flex;
   align-items: center;
@@ -254,6 +256,10 @@ button { color: inherit; }
   .brand-mark { width: 32px; height: 32px; }
   .brand-tag { padding: 4px 5px; font-size: 7px; }
   .main-nav, .header-cta { display: none; }
+  .main-nav.is-open { position: absolute; top: calc(100% + 1px); right: 20px; left: 20px; display: flex; align-items: stretch; flex-direction: column; gap: 0; margin: 0; padding: 8px 14px; border: 1px solid var(--border); border-radius: 6px; background: #11120f; box-shadow: 0 12px 28px #0008; }
+  .main-nav.is-open a { padding: 12px 4px; border-bottom: 1px solid #ffffff0a; font-size: 12px; }
+  .main-nav.is-open a:last-child { border-bottom: 0; }
+  .main-nav.is-open a span { float: right; }
   .mobile-menu { display: flex; }
   .hero { grid-template-columns: 1fr; min-height: 0; padding-top: 61px; padding-bottom: 44px; }
   .hero-copy { padding: 0; }
