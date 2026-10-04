@@ -7,18 +7,19 @@ import { Readable } from 'node:stream'
 import { pipeline } from 'node:stream/promises'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
+import { createPandaApiAuth, PandaApiAuthError } from './panda-api-auth.js'
 
 const projectRoot = fileURLToPath(new URL('../', import.meta.url))
 const distDirectory = path.join(projectRoot, 'dist')
 const isProduction = process.argv[2] === 'production' || process.env.NODE_ENV === 'production'
 const host = isProduction ? (process.env.HOST || '0.0.0.0') : '127.0.0.1'
 const port = Number(process.env.PORT || (isProduction ? 3000 : process.env.PANDAAPI_PROXY_PORT || 3001))
-const apiToken = process.env.PANDAAPI_TOKEN?.trim().replace(/^Bearer\s+/i, '')
 const apiBaseUrl = 'https://pandaapi.com.br'
-
-if (!apiToken) {
-  console.warn('PANDAAPI_TOKEN não definido. As ferramentas mostrarão como configurar a integração no arquivo .env.')
-}
+const pandaApiAuth = createPandaApiAuth({
+  apiBaseUrl,
+  email: process.env.PANDAAPI_EMAIL?.trim(),
+  password: process.env.PANDAAPI_PASSWORD,
+})
 
 if (!Number.isInteger(port) || port < 1 || port > 65535) {
   throw new Error(`PORT ou PANDAAPI_PROXY_PORT inválido: ${port}`)
@@ -52,13 +53,20 @@ const apiRouter = express.Router()
 
 async function forwardToPandaApi(request, response, apiPath) {
   try {
-    const upstream = await fetch(`${apiBaseUrl}${apiPath}`, {
-      headers: {
-        Accept: request.get('accept') || 'application/json, application/pdf, text/plain',
-        Authorization: `Bearer ${apiToken}`,
-      },
-      signal: AbortSignal.timeout(30_000),
-    })
+    let upstream
+    for (let attempt = 0; attempt < 2; attempt += 1) {
+      const token = await pandaApiAuth.getToken()
+      upstream = await fetch(`${apiBaseUrl}${apiPath}`, {
+        headers: {
+          Accept: request.get('accept') || 'application/json, application/pdf, text/plain',
+          Authorization: `Bearer ${token}`,
+        },
+        signal: AbortSignal.timeout(30_000),
+      })
+
+      if (upstream.status !== 401 || attempt > 0) break
+      pandaApiAuth.invalidate(token)
+    }
 
     if (!upstream.ok) {
       const body = await upstream.text()
@@ -73,13 +81,13 @@ async function forwardToPandaApi(request, response, apiPath) {
 
       const status = upstream.status >= 500 ? 502 : upstream.status
       const fallback = upstream.status === 401
-        ? 'O token PandaAPI é inválido ou expirou. Atualize o PANDAAPI_TOKEN no ambiente do servidor.'
+        ? 'O login da PandaAPI foi recusado. Verifique PANDAAPI_EMAIL e PANDAAPI_PASSWORD no servidor.'
         : upstream.status === 429
           ? 'A PandaAPI atingiu o limite de consultas. Aguarde e tente novamente.'
           : `A PandaAPI recusou a solicitação (HTTP ${upstream.status}).`
 
       response.status(status).json({
-        title: upstream.status === 401 ? 'Token PandaAPI inválido' : 'Falha na solicitação à PandaAPI',
+        title: upstream.status === 401 ? 'Falha na autenticação PandaAPI' : 'Falha na solicitação à PandaAPI',
         detail: detail || fallback,
       })
       return
@@ -100,8 +108,22 @@ async function forwardToPandaApi(request, response, apiPath) {
 
     await pipeline(Readable.fromWeb(upstream.body), response)
   } catch (error) {
-    const timedOut = error?.name === 'TimeoutError' || error?.name === 'AbortError'
     const routePath = `${request.baseUrl}${request.route?.path ?? '/[rota desconhecida]'}`
+    if (error instanceof PandaApiAuthError) {
+      const status = error.kind === 'configuration' ? 503 : error.kind === 'connection' ? 504 : 502
+      const detail = error.kind === 'configuration'
+        ? 'Configure PANDAAPI_EMAIL e PANDAAPI_PASSWORD nas variáveis de ambiente do servidor.'
+        : error.kind === 'credentials'
+          ? 'O login da PandaAPI foi recusado. Verifique PANDAAPI_EMAIL e PANDAAPI_PASSWORD.'
+          : error.message
+      response.status(status).json({
+        title: error.kind === 'configuration' ? 'API ainda não configurada' : 'Falha na autenticação PandaAPI',
+        detail,
+      })
+      return
+    }
+
+    const timedOut = error?.name === 'TimeoutError' || error?.name === 'AbortError'
     console.error(`Falha no proxy ${request.method} ${routePath}:`, error)
 
     if (!response.headersSent) {
@@ -120,10 +142,10 @@ async function forwardToPandaApi(request, response, apiPath) {
 
 apiRouter.use(apiLimiter)
 apiRouter.use((_request, response, next) => {
-  if (!apiToken) {
+  if (!pandaApiAuth.isConfigured) {
     response.status(503).json({
       title: 'API ainda não configurada',
-      detail: 'Adicione seu token de serviço à variável PANDAAPI_TOKEN do arquivo .env e reinicie o servidor.',
+      detail: 'Configure PANDAAPI_EMAIL e PANDAAPI_PASSWORD nas variáveis de ambiente do servidor.',
     })
     return
   }

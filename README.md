@@ -1,6 +1,6 @@
 # PandaAPI Tools
 
-Homepage de ferramentas PandaAPI feita com Vue 3, Vite e Express. Visitantes não precisam criar uma conta. As seis ferramentas usam a API PandaAPI através de um proxy no servidor que protege o token Bearer.
+Homepage de ferramentas PandaAPI feita com Vue 3, Vite e Express. Visitantes não precisam criar uma conta. As seis ferramentas usam a API PandaAPI através de um proxy no servidor. O servidor autentica com e-mail e senha, obtém o token Bearer pelo endpoint de login e o mantém apenas em memória.
 
 ## Começar
 
@@ -20,7 +20,7 @@ npm run preview
 
 ## Integração com a API
 
-As rotas de ferramentas da API PandaAPI exigem um token JWT Bearer. Não coloque o token no Vue nem em variáveis `VITE_*`, pois esses valores ficam públicos no navegador.
+O servidor obtém o token JWT Bearer automaticamente pelo endpoint de login da PandaAPI. As credenciais nunca são enviadas ao navegador e não devem ser colocadas no Vue nem em variáveis `VITE_*`.
 
 1. Copie o modelo de configuração:
 
@@ -28,15 +28,16 @@ As rotas de ferramentas da API PandaAPI exigem um token JWT Bearer. Não coloque
    Copy-Item .env.example .env
    ```
 
-2. Edite `.env` e substitua `cole_seu_token_bearer_aqui` pelo token de serviço:
+2. Edite `.env` e informe as credenciais da conta de serviço:
 
    ```env
-   PANDAAPI_TOKEN=seu_token_de_servico
+   PANDAAPI_EMAIL=seu_email_de_servico
+   PANDAAPI_PASSWORD=sua_senha_de_servico
    ```
 
-3. Reinicie o servidor com `npm run dev`.
+3. Reinicie o servidor com `npm run dev`. O servidor fará login em `/auth/login`, armazenará o Bearer em memória até perto da expiração e tentará autenticar novamente se receber uma resposta `401`.
 
-As chamadas do navegador passam pelo proxy local, que acrescenta o token no servidor e limita as solicitações a 30 por minuto por endereço IP. O arquivo `.env` não deve ser enviado ao Git. Em produção, configure `PANDAAPI_TOKEN` como variável de ambiente do serviço.
+As chamadas do navegador passam pelo proxy local, que autentica na PandaAPI no servidor e limita as solicitações a 30 por minuto por endereço IP. O arquivo `.env` não deve ser enviado ao Git. Em produção, configure `PANDAAPI_EMAIL` e `PANDAAPI_PASSWORD` como variáveis de ambiente do serviço.
 
 A documentação pública está disponível em [pandaapi.com.br/swagger/index.html](https://pandaapi.com.br/swagger/index.html).
 
@@ -51,4 +52,4 @@ Configure `PORT` no ambiente de produção se a plataforma fornecer uma porta pr
 
 ## Privacidade e publicidade
 
-A página não contém autenticação de usuário, formulários de cadastro nem integrações com redes de anúncios. Consultas reais de CNPJ e downloads de PDF são encaminhados à PandaAPI pelo servidor; a credencial permanece apenas nas variáveis de ambiente do backend.
+A página não contém autenticação de usuário, formulários de cadastro nem integrações com redes de anúncios. Consultas reais de CNPJ e downloads de PDF são encaminhados à PandaAPI pelo servidor; as credenciais permanecem apenas nas variáveis de ambiente do backend, e o token de acesso é mantido somente em memória.
