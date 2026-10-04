@@ -1,0 +1,24 @@
+{
+  "name": "pandaapi-web",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "concurrently --kill-others \"node server/index.js\" \"vite --host 127.0.0.1\"",
+    "build": "vite build",
+    "test": "node --test",
+    "preview": "node server/index.js production",
+    "start": "node server/index.js production"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "express-rate-limit": "^7.5.0",
+    "vue": "^3.5.13"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.2.1",
+    "concurrently": "^9.1.2",
+    "vite": "^6.1.0"
+  }
+}
