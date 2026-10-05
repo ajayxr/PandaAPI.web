@@ -167,6 +167,14 @@ button { color: inherit; }
 .copy-button svg { width: 17px; height: 17px; }
 .generate-button { width: 100%; min-height: 42px; margin-top: 10px; }
 .generate-button svg { width: 17px; height: 17px; }
+.mask-toggle { position: relative; display: flex; align-items: center; gap: 9px; align-self: flex-start; margin-top: 13px; color: #b6b8ab; font-size: 10px; cursor: pointer; }
+.mask-toggle input { position: absolute; z-index: 1; width: 16px; height: 16px; margin: 0; opacity: 0; cursor: pointer; }
+.mask-toggle-box { width: 16px; height: 16px; display: grid; flex: 0 0 auto; place-items: center; border: 1px solid #515348; border-radius: 4px; background: #10110f; color: #171912; pointer-events: none; transition: border-color .18s, background .18s, box-shadow .18s; }
+.mask-toggle-box svg { width: 12px; height: 12px; opacity: 0; transform: scale(.7); transition: opacity .18s, transform .18s; }
+.mask-toggle input:checked + .mask-toggle-box { border-color: var(--lime); background: var(--lime); }
+.mask-toggle input:checked + .mask-toggle-box svg { opacity: 1; transform: scale(1); }
+.mask-toggle input:focus-visible + .mask-toggle-box { outline: 2px solid #c5f36a70; outline-offset: 2px; }
+.mask-example { margin-left: 5px; color: #77796e; font-family: var(--mono); font-size: 9px; }
 .form-footnote { display: flex; align-items: center; gap: 6px; margin: 10px 0 0; color: #85867c; font-size: 9px; }
 .form-footnote span { color: var(--lime); }
 .text-field { width: 100%; color: #efefe8; outline: none; font-family: var(--mono); font-size: 13px; transition: border-color .18s; }

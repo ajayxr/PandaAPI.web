@@ -18,6 +18,7 @@ const tools = [
 const activeTool = ref(null)
 const mobileMenuOpen = ref(false)
 const generatedDocument = ref('')
+const maskGeneratedDocument = ref(true)
 const validatorInput = ref('')
 const validation = ref(null)
 const lookupInput = ref('')
@@ -38,6 +39,11 @@ const isGenerator = computed(() => activeTool.value?.startsWith('generate-'))
 const isValidator = computed(() => activeTool.value?.startsWith('validate-'))
 const isLookup = computed(() => activeTool.value === 'lookup-cnpj')
 const documentLabel = computed(() => activeTool.value === 'generate-cpf' ? 'CPF' : 'CNPJ')
+const generatedDocumentPresentation = computed(() => {
+  if (!generatedDocument.value) return ''
+  if (!maskGeneratedDocument.value) return generatedDocument.value
+  return formatDocument(generatedDocument.value, activeTool.value === 'generate-cpf' ? 'CPF' : 'CNPJ')
+})
 const lookupPresentation = computed(() => lookupResult.value
   ? formatLookupResult(lookupResult.value, lookupCompletedCnpj.value)
   : null)
@@ -114,6 +120,7 @@ async function requestPandaApi(path, { download = false } = {}) {
 function openTool(id) {
   activeTool.value = id
   generatedDocument.value = ''
+  maskGeneratedDocument.value = true
   validatorInput.value = ''
   validation.value = null
   lookupInput.value = ''
@@ -144,7 +151,7 @@ async function generateDocument() {
     if (!document) {
       throw new Error('A PandaAPI respondeu, mas não foi possível reconhecer o documento. Confira o formato da resposta no Swagger.')
     }
-    generatedDocument.value = formatDocument(document, toolId === 'generate-cpf' ? 'CPF' : 'CNPJ')
+    generatedDocument.value = document
   } catch (error) {
     if (activeTool.value === toolId) showNotice(error.message)
   } finally {
@@ -190,9 +197,9 @@ async function validateDocument() {
     validation.value = {
       valid: valid === true,
       message: valid === true
-        ? 'A PandaAPI confirmou que o documento é válido.'
+        ? 'Documento é válido.'
         : valid === false
-          ? 'A PandaAPI informou que o documento é inválido.'
+          ? 'Documento é inválido.'
           : 'A API não informou se o documento é válido. Confira a documentação ou tente novamente.',
     }
   } catch (error) {
@@ -210,7 +217,7 @@ async function validateDocument() {
 
 async function copyDocument() {
   try {
-    await navigator.clipboard.writeText(generatedDocument.value)
+    await navigator.clipboard.writeText(generatedDocumentPresentation.value)
     showNotice('Documento copiado para a área de transferência.')
   } catch {
     showNotice('Não foi possível copiar. Selecione e copie o documento.')
@@ -417,14 +424,14 @@ function resetTool() {
             <div v-if="isGenerator" class="workspace-body">
               <div class="workspace-explanation">
                 <span class="workspace-number">01</span>
-                <h4>Dados de teste<br />em um clique.</h4>
+                <h4>Dados de teste <br /> em um clique.</h4>
                 <p>Gere documentos válidos diretamente pela API PandaAPI.</p>
                 <div class="privacy-note"><span>◈</span> Não salvamos logs, utilize sem preocupação.</div>
               </div>
               <div class="workspace-form">
                 <label class="field-label">SEU DOCUMENTO DE TESTE</label>
                 <div class="result-box" :class="{ 'result-box-ready': generatedDocument }">
-                  <span class="result-value" :class="{ 'result-placeholder': !generatedDocument }">{{ generatedDocument || 'Clique para gerar um número válido' }}</span>
+                  <span class="result-value" :class="{ 'result-placeholder': !generatedDocument }">{{ generatedDocumentPresentation || 'Clique para gerar um número válido' }}</span>
                   <button v-if="generatedDocument" class="copy-button" type="button" aria-label="Copiar documento" @click="copyDocument">
                     <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><rect x="7" y="7" width="9" height="10" rx="1.5" stroke="currentColor" stroke-width="1.4" /><path d="M13 7V4.5A1.5 1.5 0 0 0 11.5 3h-7A1.5 1.5 0 0 0 3 4.5v8A1.5 1.5 0 0 0 4.5 14H7" stroke="currentColor" stroke-width="1.4" /></svg>
                   </button>
@@ -433,6 +440,13 @@ function resetTool() {
                   <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M10 2.5v15M2.5 10h15" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" /></svg>
                   Gerar {{ documentLabel }} válido
                 </button>
+                <label class="mask-toggle">
+                  <input v-model="maskGeneratedDocument" type="checkbox" />
+                  <span class="mask-toggle-box" aria-hidden="true">
+                    <svg viewBox="0 0 16 16" fill="none"><path d="m3.5 8 3 3 6-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" /></svg>
+                  </span>
+                  <span>Aplicar máscara <span class="mask-example">{{ activeTool === 'generate-cpf' ? '000.000.000-00' : '00.000.000/0000-00' }}</span></span>
+                </label>
                 <p class="form-footnote"><span>✳</span> Para testes e desenvolvimento. Não use como documento real.</p>
               </div>
             </div>
@@ -440,7 +454,7 @@ function resetTool() {
             <div v-else-if="isValidator" class="workspace-body">
               <div class="workspace-explanation">
                 <span class="workspace-number">02</span>
-                <h4>Valide antes<br />de seguir.</h4>
+                <h4>Valide antes <br /> de seguir.</h4>
                 <p>Peça à PandaAPI para conferir os dígitos verificadores do documento.</p>
                 <div class="privacy-note"><span>◈</span>A validação matemática verifica se o CPF/CNPJ segue corretamente o algoritmo dos dígitos verificadores (DV). Isso não confirma se o documento está cadastrado ou ativo na Receita Federal.</div>
               </div>
@@ -467,7 +481,7 @@ function resetTool() {
             <div v-else-if="isLookup" class="workspace-body">
               <div class="workspace-explanation">
                 <span class="workspace-number">03</span>
-                <h4>Dados reais.<br />Sem complicação.</h4>
+                <h4>Dados reais. <br /> Sem complicação.</h4>
                 <p>Consulte dados públicos e gere o relatório PDF usando a API PandaAPI.</p>
                 <div class="privacy-note"><span>◈</span>Dados fornecidos por meio da integração com a CNPJ.ai.</div>
               </div>
@@ -542,7 +556,7 @@ function resetTool() {
             <a class="button button-primary" href="#ferramentas">Encontrar minha ferramenta <span aria-hidden="true">↗</span></a>
           </div>
           <div class="about-points">
-            <div class="about-point"><span class="point-index">01</span><div><strong>Feita para devs & QA</strong><p>Dados de teste válidos para seu ambiente de desenvolvimento.</p></div><span class="point-check">✓</span></div>
+            <div class="about-point"><span class="point-index">01</span><div><strong>Feita para analistas, devs & QA</strong><p>Dados de teste válidos para seu ambiente de desenvolvimento.</p></div><span class="point-check">✓</span></div>
             <div class="about-point"><span class="point-index">02</span><div><strong>Privacidade por padrão</strong><p>Geração e validação feitas localmente, sem enviar seus dados.</p></div><span class="point-check">✓</span></div>
             <div class="about-point"><span class="point-index">03</span><div><strong>Sem barreiras</strong><p>Grátis, direto no navegador e sem precisar criar uma conta.</p></div><span class="point-check">✓</span></div>
           </div>
