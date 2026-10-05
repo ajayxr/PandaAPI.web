@@ -46,7 +46,8 @@ button { color: inherit; }
 .header-cta { display: inline-flex; align-items: center; gap: 18px; padding: 10px 14px; border: 1px solid #36372f; border-radius: 5px; font-size: 11px; font-weight: 600; transition: background .18s, border-color .18s; }
 .header-cta:hover { border-color: var(--lime); background: #c5f36a0b; }
 .header-cta span { color: var(--lime); font-size: 15px; }
-.mobile-menu { display: none; width: 40px; height: 40px; align-items: center; justify-content: center; border: 1px solid var(--border); border-radius: 5px; }
+.mobile-menu { display: none; width: 40px; height: 40px; flex-shrink: 0; align-items: center; justify-content: center; padding: 0; border: 1px solid var(--border); border-radius: 5px; appearance: none; background: transparent; color: #aeafa7; cursor: pointer; }
+.mobile-menu:hover { border-color: var(--lime); color: var(--lime); }
 .mobile-menu svg { width: 20px; }
 
 .hero { position: relative; display: grid; grid-template-columns: 1.06fr .94fr; align-items: center; min-height: 580px; padding-top: 5px; }
