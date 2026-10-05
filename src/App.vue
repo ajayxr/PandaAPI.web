@@ -456,7 +456,7 @@ function resetTool() {
                 <span class="workspace-number">02</span>
                 <h4>Valide antes <br /> de seguir.</h4>
                 <p>Peça à PandaAPI para conferir os dígitos verificadores do documento.</p>
-                <div class="privacy-note"><span>◈</span>A validação matemática verifica se o CPF/CNPJ segue corretamente o algoritmo dos dígitos verificadores (DV). Isso não confirma se o documento está cadastrado ou ativo na Receita Federal.</div>
+                <div class="privacy-note"><span>◈</span>Valida apenas os dígitos verificadores. Não consulta a Receita Federal.</div>
               </div>
               <form class="workspace-form" @submit.prevent="validateDocument">
                 <label class="field-label" for="validator-input">DOCUMENTO PARA VALIDAR</label>
@@ -497,7 +497,7 @@ function resetTool() {
                   inputmode="numeric"
                 />
                 <button class="button button-primary generate-button" type="submit" :disabled="apiBusy">Consultar CNPJ <span aria-hidden="true">→</span></button>
-                <div class="api-pending" role="status"><span class="api-pending-dot"></span><span>Consultas e downloads são encaminhados ao servidor; as credenciais e o token de acesso permanecem protegidos no servidor.</span></div>
+                <div class="api-pending" role="status"><span class="api-pending-dot"></span><span>Consulte os dados e baixe o relatório em PDF.</span></div>
                 <div v-if="lookupPresentation" class="api-data-result" aria-live="polite">
                   <div class="api-result-heading">
                     <div>
