@@ -2,6 +2,7 @@
 import { computed, nextTick, ref } from 'vue'
 import { findApiDocument, findApiValidation, formatLookupResult } from './api-formatters.js'
 import PandaMark from './components/PandaMark.vue'
+import { createDelayedLoading } from './delayed-loading.js'
 
 const pandaApiSwaggerUrl = import.meta.env.VITE_PANDAAPI_SWAGGER_URL || 'https://api.pandaapi.com.br/swagger/index.html'
 
@@ -24,8 +25,13 @@ const lookupResult = ref(null)
 const lookupCompletedCnpj = ref('')
 const apiBusy = ref(false)
 const pdfBusy = ref(false)
+const apiLoading = ref(false)
 const notice = ref('')
 let noticeTimeout
+
+const apiLoadingController = createDelayedLoading({
+  onChange: (visible) => { apiLoading.value = visible },
+})
 
 const selectedTool = computed(() => tools.find((tool) => tool.id === activeTool.value))
 const isGenerator = computed(() => activeTool.value?.startsWith('generate-'))
@@ -65,17 +71,33 @@ function explainApiError(status, payload, path) {
 }
 
 async function requestPandaApi(path, { download = false } = {}) {
-  let response
+  const finishLoading = apiLoadingController.begin()
   try {
-    response = await fetch(`/api${path}`, {
-      headers: { Accept: download ? 'application/pdf, application/octet-stream, application/json' : 'application/json, text/plain' },
-    })
-  } catch {
-    throw new Error('Não foi possível acessar o servidor da integração. Reinicie o projeto com npm run dev.')
-  }
+    let response
+    try {
+      response = await fetch(`/api${path}`, {
+        headers: { Accept: download ? 'application/pdf, application/octet-stream, application/json' : 'application/json, text/plain' },
+      })
+    } catch {
+      throw new Error('Não foi possível acessar o servidor da integração. Reinicie o projeto com npm run dev.')
+    }
 
-  const contentType = response.headers.get('content-type') || ''
-  if (!response.ok) {
+    const contentType = response.headers.get('content-type') || ''
+    if (!response.ok) {
+      const text = await response.text()
+      let payload = text
+      try {
+        payload = text ? JSON.parse(text) : ''
+      } catch {
+        payload = text
+      }
+      const error = new Error(explainApiError(response.status, payload, path))
+      error.status = response.status
+      throw error
+    }
+
+    if (download) return { blob: await response.blob(), contentType, payload: null }
+
     const text = await response.text()
     let payload = text
     try {
@@ -83,21 +105,10 @@ async function requestPandaApi(path, { download = false } = {}) {
     } catch {
       payload = text
     }
-    const error = new Error(explainApiError(response.status, payload, path))
-    error.status = response.status
-    throw error
+    return { payload, contentType }
+  } finally {
+    finishLoading()
   }
-
-  if (download) return { blob: await response.blob(), contentType, payload: null }
-
-  const text = await response.text()
-  let payload = text
-  try {
-    payload = text ? JSON.parse(text) : ''
-  } catch {
-    payload = text
-  }
-  return { payload, contentType }
 }
 
 function openTool(id) {
@@ -413,7 +424,7 @@ function resetTool() {
               <div class="workspace-form">
                 <label class="field-label">SEU DOCUMENTO DE TESTE</label>
                 <div class="result-box" :class="{ 'result-box-ready': generatedDocument }">
-                  <span class="result-value" :class="{ 'result-placeholder': !generatedDocument }">{{ apiBusy ? 'Consultando a PandaAPI…' : generatedDocument || 'Clique para gerar um número válido' }}</span>
+                  <span class="result-value" :class="{ 'result-placeholder': !generatedDocument }">{{ generatedDocument || 'Clique para gerar um número válido' }}</span>
                   <button v-if="generatedDocument" class="copy-button" type="button" aria-label="Copiar documento" @click="copyDocument">
                     <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><rect x="7" y="7" width="9" height="10" rx="1.5" stroke="currentColor" stroke-width="1.4" /><path d="M13 7V4.5A1.5 1.5 0 0 0 11.5 3h-7A1.5 1.5 0 0 0 3 4.5v8A1.5 1.5 0 0 0 4.5 14H7" stroke="currentColor" stroke-width="1.4" /></svg>
                   </button>
@@ -472,7 +483,7 @@ function resetTool() {
                   inputmode="numeric"
                 />
                 <button class="button button-primary generate-button" type="submit" :disabled="apiBusy">Consultar CNPJ <span aria-hidden="true">→</span></button>
-                <div class="api-pending" role="status"><span class="api-pending-dot"></span><span>Consultas e downloads são encaminhados ao servidor; o token Bearer não é exposto ao navegador.</span></div>
+                <div class="api-pending" role="status"><span class="api-pending-dot"></span><span>Consultas e downloads são encaminhados ao servidor; as credenciais e o token de acesso permanecem protegidos no servidor.</span></div>
                 <div v-if="lookupPresentation" class="api-data-result" aria-live="polite">
                   <div class="api-result-heading">
                     <div>
@@ -503,13 +514,24 @@ function resetTool() {
                 </div>
                 <button class="pdf-button" type="button" :disabled="pdfBusy || apiBusy || !lookupCompletedCnpj" @click="printReport">
                   <span aria-hidden="true">↧</span>
-                  {{ pdfBusy ? 'Gerando relatório…' : 'Gerar relatório em PDF' }}
+                  Gerar relatório em PDF
                 </button>
               </form>
             </div>
           </section>
         </Transition>
       </section>
+
+      <Transition name="api-loading">
+        <div v-if="apiLoading" class="api-loading" role="status" aria-live="polite">
+          <span class="api-loading-mark"><PandaMark /></span>
+          <span class="api-loading-copy">
+            <strong>PandaAPI em ação</strong>
+            <span>Processando...</span>
+          </span>
+          <span class="api-loading-indicator" aria-hidden="true"></span>
+        </div>
+      </Transition>
 
       <section id="sobre" class="about-section">
         <div class="about-inner page-shell">
