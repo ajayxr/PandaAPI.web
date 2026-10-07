@@ -57,11 +57,17 @@ async function forwardToPandaApi(request, response, apiPath) {
     let upstream
     for (let attempt = 0; attempt < 2; attempt += 1) {
       const token = await pandaApiAuth.getToken()
+      const body = request.method === 'GET' || request.method === 'HEAD'
+        ? undefined
+        : request.body
       upstream = await fetch(`${apiBaseUrl}${apiPath}`, {
         headers: {
           Accept: request.get('accept') || 'application/json, application/pdf, text/plain',
+          ...(body === undefined ? {} : { 'Content-Type': 'application/json' }),
           Authorization: `Bearer ${token}`,
         },
+        method: request.method,
+        ...(body === undefined ? {} : { body: JSON.stringify(body) }),
         signal: AbortSignal.timeout(30_000),
       })
 
@@ -142,6 +148,7 @@ async function forwardToPandaApi(request, response, apiPath) {
 }
 
 apiRouter.use(apiLimiter)
+apiRouter.use(express.json())
 apiRouter.use((_request, response, next) => {
   if (!pandaApiAuth.isConfigured) {
     response.status(503).json({
@@ -165,28 +172,30 @@ apiRouter.get('/generate/cnpj/alphanumeric', (request, response) => {
   void forwardToPandaApi(request, response, '/generate/cnpj/alphanumeric')
 })
 
-apiRouter.get('/validate/cpf/:cpf', (request, response, next) => {
-  const cpf = request.params.cpf.replace(/\D/g, '')
+apiRouter.post('/validate/cpf', (request, response, next) => {
+  const cpf = typeof request.body?.cpf === 'string' ? request.body.cpf.replace(/\D/g, '') : ''
   if (cpf.length !== 11) {
     response.status(400).json({ title: 'CPF inválido', detail: 'Informe um CPF com 11 dígitos.' })
     return
   }
+  request.body.cpf = cpf
   next()
 }, (request, response) => {
-  const cpf = request.params.cpf.replace(/\D/g, '')
-  void forwardToPandaApi(request, response, `/validate/cpf/${cpf}`)
+  void forwardToPandaApi(request, response, '/validate/cpf')
 })
 
-apiRouter.get('/validate/cnpj/:cnpj', (request, response, next) => {
-  const cnpj = request.params.cnpj.toUpperCase().replace(/[^A-Z0-9]/g, '')
+apiRouter.post('/validate/cnpj', (request, response, next) => {
+  const cnpj = typeof request.body?.cnpj === 'string'
+    ? request.body.cnpj.toUpperCase().replace(/[^A-Z0-9]/g, '')
+    : ''
   if (cnpj.length !== 14) {
     response.status(400).json({ title: 'CNPJ inválido', detail: 'Informe um CNPJ com 14 caracteres.' })
     return
   }
-  request.params.cnpj = cnpj
+  request.body.cnpj = cnpj
   next()
 }, (request, response) => {
-  void forwardToPandaApi(request, response, `/validate/cnpj/${request.params.cnpj}`)
+  void forwardToPandaApi(request, response, '/validate/cnpj')
 })
 
 apiRouter.get('/cnpj/:cnpj', (request, response, next) => {

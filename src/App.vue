@@ -64,8 +64,8 @@ function explainApiError(status, payload, path) {
     if (typeof detail === 'string' && detail.trim() && !/\bHTTP\s+400\b|recusou a solicitação/i.test(detail)) {
       return detail.trim().slice(0, 300)
     }
-    if (path.startsWith('/validate/cpf/')) return 'Este CPF não é válido. Confira os números informados e tente novamente.'
-    if (path.startsWith('/validate/cnpj/')) return 'Este CNPJ não é válido. Confira os caracteres informados e tente novamente.'
+    if (path.startsWith('/validate/cpf')) return 'Este CPF não é válido. Confira os números informados e tente novamente.'
+    if (path.startsWith('/validate/cnpj')) return 'Este CNPJ não é válido. Confira os caracteres informados e tente novamente.'
     if (path.startsWith('/cnpj/')) return 'Não foi possível consultar esse CNPJ. Confira o número e tente novamente.'
     return 'Não foi possível processar os dados informados. Confira os dados e tente novamente.'
   }
@@ -76,13 +76,18 @@ function explainApiError(status, payload, path) {
   return `A PandaAPI respondeu com HTTP ${status}. Tente novamente.`
 }
 
-async function requestPandaApi(path, { download = false } = {}) {
+async function requestPandaApi(path, { download = false, method = 'GET', body } = {}) {
   const finishLoading = apiLoadingController.begin()
   try {
     let response
     try {
       response = await fetch(`/api${path}`, {
-        headers: { Accept: download ? 'application/pdf, application/octet-stream, application/json' : 'application/json, text/plain' },
+        method,
+        headers: {
+          Accept: download ? 'application/pdf, application/octet-stream, application/json' : 'application/json, text/plain',
+          ...(body === undefined ? {} : { 'Content-Type': 'application/json' }),
+        },
+        ...(body === undefined ? {} : { body: JSON.stringify(body) }),
       })
     } catch {
       throw new Error('Não foi possível acessar o servidor da integração. Reinicie o projeto com npm run dev.')
@@ -190,8 +195,11 @@ async function validateDocument() {
   apiBusy.value = true
   validation.value = null
   try {
-    const encoded = encodeURIComponent(normalized)
-    const { payload } = await requestPandaApi(`/validate/${isCpf ? 'cpf' : 'cnpj'}/${encoded}`)
+    const documentType = isCpf ? 'cpf' : 'cnpj'
+    const { payload } = await requestPandaApi(`/validate/${documentType}`, {
+      method: 'POST',
+      body: { [documentType]: normalized },
+    })
     if (activeTool.value !== toolId) return
     const valid = findApiValidation(payload)
     validation.value = {
