@@ -316,6 +316,7 @@ function resetTool() {
 
       <nav class="main-nav" :class="{ 'is-open': mobileMenuOpen }" aria-label="Navegação principal" @click="mobileMenuOpen = false">
         <a href="#ferramentas">Ferramentas</a>
+        <a href="#extensao">Extensão</a>
         <a href="#sobre">Sobre</a>
         <a :href="pandaApiSwaggerUrl" target="_blank" rel="noreferrer">Documentação <span aria-hidden="true">↗</span></a>
         <a href="https://github.com/ajayxr/PandaAPI.web" target="_blank" rel="noreferrer">GitHub Web <span aria-hidden="true">↗</span></a>
@@ -554,6 +555,61 @@ function resetTool() {
           <span class="api-loading-indicator" aria-hidden="true"></span>
         </div>
       </Transition>
+
+      <section id="extensao" class="extension-section page-shell" aria-labelledby="extension-title">
+        <div class="extension-preview" aria-hidden="true">
+          <div class="extension-window">
+            <div class="extension-window-top">
+              <span class="extension-window-dots"><i></i><i></i><i></i></span>
+              <span>EXTENSÃO DO NAVEGADOR</span>
+            </div>
+            <div class="extension-brand">
+              <PandaMark />
+              <span><strong>PandaAPI</strong><small>CPF e CNPJ</small></span>
+              <span class="extension-status"></span>
+            </div>
+            <div class="extension-preview-rule"></div>
+            <div class="extension-preview-copy">
+              <span>MAIS PRATICIDADE</span>
+              <strong>Seu fluxo,<br />sem interrupções.</strong>
+            </div>
+            <div class="extension-preview-tags"><span>CPF</span><span>CNPJ</span><span>Grátis</span></div>
+          </div>
+          <span class="extension-preview-orbit extension-orbit-one"></span>
+          <span class="extension-preview-orbit extension-orbit-two"></span>
+          <span class="extension-preview-spark">✳</span>
+        </div>
+
+        <div class="extension-copy">
+          <div class="eyebrow"><span class="eyebrow-dot"></span> PANDAAPI NO SEU NAVEGADOR</div>
+          <h2 id="extension-title">CPF e CNPJ.<br /><span>Sem sair do fluxo.</span></h2>
+          <p>A extensão PandaAPI está disponível gratuitamente para Google Chrome e Microsoft Edge. Mais praticidade para o seu dia a dia, sem complicação.</p>
+          <div class="extension-benefits">
+            <span><span aria-hidden="true">✓</span> Instalação gratuita</span>
+            <span><span aria-hidden="true">✓</span> Nas lojas oficiais</span>
+            <span><span aria-hidden="true">✓</span> Simples de usar</span>
+          </div>
+          <div class="extension-actions">
+            <a
+              class="button button-primary extension-store-button"
+              href="https://chromewebstore.google.com/detail/pandaapi-%E2%80%94-cpf-e-cnpj/fpjocniaflniiopilbbbonenoadkjcdd"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Google Chrome <span aria-hidden="true">↗</span>
+            </a>
+            <a
+              class="button extension-store-button extension-store-button-secondary"
+              href="https://microsoftedge.microsoft.com/addons/detail/pandaapi-%E2%80%94-cpf-e-cnpj/ciancgbcomeoeekkiaidalpkbbnpempi"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Microsoft Edge <span aria-hidden="true">↗</span>
+            </a>
+          </div>
+          <span class="extension-free-note">Grátis nas lojas Google e Microsoft</span>
+        </div>
+      </section>
 
       <section id="sobre" class="about-section">
         <div class="about-inner page-shell">

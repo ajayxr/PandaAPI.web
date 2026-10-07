@@ -208,6 +208,43 @@ button { color: inherit; }
 .pdf-button { display: flex; align-items: center; justify-content: flex-start; gap: 8px; margin-top: 16px; padding: 0; border: 0; background: none; color: #9b9c93; text-align: left; font-size: 14px; cursor: pointer; }
 .pdf-button > span:first-child { color: #edc88c; font-size: 14px; }
 .pdf-button:hover { color: #eee; }
+.extension-section { position: relative; display: grid; grid-template-columns: 1fr 1fr; align-items: center; gap: 76px; min-height: 470px; padding-block: 64px; scroll-margin-top: 30px; }
+.extension-preview { position: relative; min-height: 320px; display: grid; place-items: center; isolation: isolate; }
+.extension-window { z-index: 1; width: min(340px, 100%); overflow: hidden; border: 1px solid #34362d; border-radius: 9px; background: linear-gradient(145deg, #1b1d17, #141512 70%); box-shadow: 0 24px 70px #0008, inset 0 1px #ffffff08; transform: rotate(-2deg); }
+.extension-window-top { height: 37px; display: flex; align-items: center; justify-content: space-between; padding: 0 14px; border-bottom: 1px solid #2c2d26; color: #77796f; font-family: var(--mono); font-size: 8px; letter-spacing: .75px; }
+.extension-window-dots { display: flex; gap: 5px; }
+.extension-window-dots i { width: 6px; height: 6px; border-radius: 50%; background: #45463f; }
+.extension-window-dots i:first-child { background: #ea8474; }
+.extension-window-dots i:nth-child(2) { background: #d4b96b; }
+.extension-window-dots i:nth-child(3) { background: #8ab472; }
+.extension-brand { display: flex; align-items: center; gap: 11px; padding: 20px 21px 17px; }
+.extension-brand .brand-mark { width: 40px; height: 40px; }
+.extension-brand > span:nth-child(2) { display: grid; gap: 3px; }
+.extension-brand strong { color: #f0f0e9; font-size: 16px; font-weight: 700; }
+.extension-brand small { color: #95968d; font-size: 12px; }
+.extension-status { width: 7px; height: 7px; margin-left: auto; border-radius: 50%; background: var(--lime); box-shadow: 0 0 10px #c5f36a70; }
+.extension-preview-rule { height: 1px; margin-inline: 21px; background: #2c2d26; }
+.extension-preview-copy { display: grid; gap: 11px; padding: 23px 21px 20px; }
+.extension-preview-copy > span { color: #97998b; font-family: var(--mono); font-size: 9px; letter-spacing: 1.1px; }
+.extension-preview-copy strong { color: #eeeee8; font-size: 25px; font-weight: 500; line-height: 1.25; letter-spacing: -.6px; }
+.extension-preview-tags { display: flex; gap: 7px; padding: 0 21px 21px; }
+.extension-preview-tags span { padding: 6px 9px; border: 1px solid #3a3c31; border-radius: 4px; color: #c4c6b8; font-family: var(--mono); font-size: 9px; }
+.extension-preview-tags span:last-child { border-color: #53613a; color: var(--lime); }
+.extension-preview-orbit { position: absolute; z-index: -1; top: 50%; left: 50%; width: 390px; height: 235px; border: 1px solid #c5f36a12; border-radius: 50%; transform: translate(-50%, -50%) rotate(-30deg); }
+.extension-orbit-two { width: 315px; height: 315px; transform: translate(-50%, -50%) rotate(30deg); }
+.extension-preview-spark { position: absolute; top: 35px; right: 40px; color: #c5f36a90; font-size: 17px; }
+.extension-copy h2 { margin: 18px 0 12px; font-size: clamp(36px, 4vw, 49px); font-weight: 500; line-height: 1.12; letter-spacing: -1.8px; }
+.extension-copy h2 span { color: var(--lime); }
+.extension-copy > p { max-width: 440px; margin: 0; color: #999a91; font-size: 18px; line-height: 1.8; }
+.extension-benefits { display: flex; flex-wrap: wrap; gap: 10px 18px; margin-top: 21px; color: #c1c2b8; font-size: 12px; }
+.extension-benefits > span { display: inline-flex; align-items: center; gap: 7px; }
+.extension-benefits > span > span { color: var(--lime); }
+.extension-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 25px; }
+.extension-store-button { min-height: 44px; gap: 14px; padding-inline: 14px; }
+.extension-store-button-secondary { border: 1px solid #3b3d34; background: #191a17; color: #edeee6; }
+.extension-store-button-secondary:hover { border-color: var(--lime); background: #c5f36a0b; }
+.extension-store-button-secondary > span { color: var(--lime); }
+.extension-free-note { display: block; margin-top: 12px; color: #777970; font-size: 11px; }
 .about-section { border-top: 1px solid #292a24; border-bottom: 1px solid #292a24; background: #131410; scroll-margin-top: 30px; }
 .about-inner { min-height: 346px; display: grid; grid-template-columns: 1fr .85fr; align-items: center; gap: 90px; padding-top: 51px; padding-bottom: 51px; }
 .about-main > .eyebrow { font-size: 14px; }
@@ -267,6 +304,8 @@ button { color: inherit; }
   .tool-card { min-height: 192px; padding: 13px; }
   .tools-grid { gap: 9px; }
   .workspace-body { gap: 16px; padding-inline: 23px; }
+  .extension-section { gap: 38px; }
+  .extension-preview-orbit { width: 330px; }
   .about-inner { gap: 40px; }
 }
 @media (max-width: 640px) {
@@ -341,6 +380,26 @@ button { color: inherit; }
   .result-value { font-size: 13px; }
   .result-placeholder { font-size: 9px; }
   .api-pending { font-size: 9px; }
+  .extension-section { grid-template-columns: 1fr; gap: 15px; min-height: 0; padding-top: 42px; padding-bottom: 43px; }
+  .extension-preview { min-height: 245px; order: 2; }
+  .extension-window { width: min(310px, 92%); }
+  .extension-window-top { height: 33px; }
+  .extension-brand { padding: 15px 17px 13px; }
+  .extension-brand .brand-mark { width: 34px; height: 34px; }
+  .extension-preview-rule { margin-inline: 17px; }
+  .extension-preview-copy { padding: 18px 17px 15px; }
+  .extension-preview-copy strong { font-size: 21px; }
+  .extension-preview-tags { padding: 0 17px 17px; }
+  .extension-preview-orbit { width: 300px; height: 190px; }
+  .extension-orbit-two { width: 230px; height: 230px; }
+  .extension-preview-spark { top: 2px; right: 18px; }
+  .extension-copy { order: 1; }
+  .extension-copy h2 { margin-top: 14px; font-size: 33px; letter-spacing: -1.1px; }
+  .extension-copy > p { font-size: 11px; line-height: 1.75; }
+  .extension-benefits { gap: 9px 13px; margin-top: 16px; font-size: 9px; }
+  .extension-actions { gap: 8px; margin-top: 19px; }
+  .extension-store-button { min-height: 40px; gap: 9px; padding-inline: 11px; font-size: 10px; }
+  .extension-free-note { margin-top: 9px; font-size: 9px; }
   .about-inner { grid-template-columns: 1fr; gap: 28px; padding-top: 39px; padding-bottom: 39px; }
   .about-main h2 { margin-top: 15px; font-size: 32px; }
   .about-main > p { font-size: 10px; }
