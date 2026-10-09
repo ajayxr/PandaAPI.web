@@ -3,6 +3,7 @@ import { computed, nextTick, ref } from 'vue'
 import { findApiDocument, findApiValidation, formatLookupResult } from './api-formatters.js'
 import PandaMark from './components/PandaMark.vue'
 import { createDelayedLoading } from './delayed-loading.js'
+import TeamSection from './components/TeamSection.vue'   
 
 const pandaApiSwaggerUrl = import.meta.env.VITE_PANDAAPI_SWAGGER_URL || 'https://api.pandaapi.com.br/swagger/index.html'
 
@@ -318,6 +319,7 @@ function resetTool() {
         <a href="#ferramentas">Ferramentas</a>
         <a href="#extensao">Extensão</a>
         <a href="#sobre">Sobre</a>
+        <a href="#time">Time</a>
         <a :href="pandaApiSwaggerUrl" target="_blank" rel="noreferrer">Documentação <span aria-hidden="true">↗</span></a>
         <a href="https://github.com/ajayxr/PandaAPI.web" target="_blank" rel="noreferrer">GitHub Web <span aria-hidden="true">↗</span></a>
         <a href="https://github.com/ajayxr/PandaAPI" target="_blank" rel="noreferrer">GitHub API <span aria-hidden="true">↗</span></a>
@@ -626,6 +628,7 @@ function resetTool() {
           </div>
         </div>
       </section>
+      <TeamSection />
     </main>
 
     <footer class="site-footer page-shell">

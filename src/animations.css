@@ -1,0 +1,119 @@
+@property --angle {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
+}
+
+@keyframes rise     { from { opacity: 0; translate: 0 22px; } to { opacity: 1; translate: 0 0; } }
+@keyframes line-in  { from { opacity: 0; translate: -10px 0; } to { opacity: 1; translate: 0 0; } }
+@keyframes bob      { from { translate: 0 -5px; } to { translate: 0 6px; } }
+@keyframes breathe  { 0%, 100% { opacity: .55; scale: .94; } 50% { opacity: 1; scale: 1.08; } }
+@keyframes scan     { 0% { top: 0; opacity: 0; } 8% { opacity: 1; } 55% { opacity: 1; } 70%, 100% { top: 100%; opacity: 0; } }
+@keyframes blink    { 50% { opacity: 0; } }
+@keyframes spin     { to { --angle: 360deg; } }
+@keyframes reveal   { from { opacity: 0; translate: 0 26px; } to { opacity: 1; translate: 0 0; } }
+
+/* ---------- 1. Entrada do hero ---------- */
+.hero-copy > * { animation: rise .9s var(--ease) both; }
+.hero-copy > :nth-child(1) { animation-delay: .05s; }
+.hero-copy > :nth-child(2) { animation-delay: .15s; }
+.hero-copy > :nth-child(3) { animation-delay: .27s; }
+.hero-copy > :nth-child(4) { animation-delay: .39s; }
+.hero-copy > :nth-child(5) { animation-delay: .5s; }
+
+.code-window { position: relative; animation: rise 1s var(--ease) .25s both; }
+
+/* ---------- 2. A janela de código "se escreve" ---------- */
+.code-line { animation: line-in .55s var(--ease) both; }
+.code-line:nth-child(1) { animation-delay: .8s; }
+.code-line:nth-child(2) { animation-delay: .95s; }
+.code-line:nth-child(3) { animation-delay: 1.1s; }
+.code-line:nth-child(4) { animation-delay: 1.25s; }
+.code-line:nth-child(5) { animation-delay: 1.4s; }
+.code-line:nth-child(6) { animation-delay: 1.55s; }
+.code-line:nth-child(7) { animation-delay: 1.7s; }
+.code-line:nth-child(8) { animation-delay: 1.85s; }
+
+/* cursor piscando no resultado */
+.code-line .code-result::after {
+  content: "";
+  display: inline-block;
+  width: 7px;
+  height: 1.05em;
+  margin-left: 4px;
+  vertical-align: text-bottom;
+  background: var(--lime);
+  animation: blink 1.1s steps(1) 2.2s infinite;
+}
+
+/* linha de varredura passando pela janela */
+.code-window::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 60px;
+  margin-top: -60px;
+  background: linear-gradient(to bottom, transparent, #c5f36a14 70%, #c5f36a40);
+  border-bottom: 1px solid #c5f36a50;
+  pointer-events: none;
+  animation: scan 6s ease-in-out 2.4s infinite;
+}
+
+/* ---------- 3. Cards flutuando + brilho respirando ---------- */
+.float-card { animation: rise .9s var(--ease) 1.2s both, bob 6s ease-in-out 2s infinite alternate; }
+.float-card-bottom { animation-delay: 1.4s, 3.2s; animation-duration: .9s, 7s; }
+.art-glow { animation: breathe 7s ease-in-out infinite; }
+
+/* ---------- 4. Borda luminosa girando nos cards de ferramenta ---------- */
+.tool-card { position: relative; }
+.tool-card::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  padding: 1px;
+  border-radius: inherit;
+  background: conic-gradient(from var(--angle), transparent 0 55%, #c5f36a 78%, transparent 100%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .35s var(--ease);
+  animation: spin 3.2s linear infinite;
+}
+.tool-card:hover::before,
+.tool-card-active::before { opacity: 1; }
+
+/* ---------- 5. Revelar ao rolar a página (scroll-driven) ---------- */
+@supports (animation-timeline: view()) {
+  .tool-card,
+  .team-card,
+  .team-code,
+  .extension-window,
+  .extension-copy,
+  .about-main,
+  .about-point {
+    animation: reveal linear both;
+    animation-timeline: view();
+    animation-range: entry 5% entry 45%;
+  }
+
+  /* janela do open source: as linhas aparecem em sequência ao rolar */
+  .team-code .code-line:nth-child(n) {
+    animation: line-in linear both;
+    animation-delay: 0s;
+    animation-timeline: view();
+    animation-range: entry 0% entry 100%;
+  }
+}
+
+/* ---------- Acessibilidade ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .hero-copy > *, .code-window, .code-line, .float-card, .art-glow,
+  .code-window::after, .code-line .code-result::after, .tool-card::before,
+  .tool-card, .extension-window, .extension-copy, .about-main, .about-point {
+    animation: none !important;
+  }
+}
